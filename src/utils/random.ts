@@ -23,6 +23,9 @@ export function getRandomElement<T>(arr: T[]): T {
   return arr[randomIndex];
 }
 
+/**
+ * Returns a random integer between [min, max)
+ */
 export function getRandomNumber(min: number = 0, max: number = 1): number {
   return min + Math.floor(Math.random() * (max - min));
 }
