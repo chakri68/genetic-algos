@@ -10,5 +10,5 @@ deno run ./src/index.ts
 
 ### TODOs
 
-[] Refactor the code with other problems
-[] Add visualization framework (using websockets and canvas API)
+- [ ] Refactor the code with other problems
+- [ ] Add visualization framework (using websockets and canvas API)
