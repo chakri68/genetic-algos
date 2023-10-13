@@ -1,5 +1,6 @@
 import { Individual, IndividualGenerator } from "./Individual.ts";
 import { Crossover, CrossoverGenerator } from "./strategies/Crossover.ts";
+import { Mutation, MutationGenerator } from "./strategies/Mutation.ts";
 import { Selection, SelectionGenerator } from "./strategies/Selection.ts";
 import { Spawn, SpawnGenerator } from "./strategies/Spawn.ts";
 import { sleep } from "./utils/async.ts";
@@ -11,16 +12,19 @@ export class World {
   private Individual: ReturnType<typeof IndividualGenerator>;
   private Selection: Selection;
   private Crossover: Crossover;
+  private Mutation: Mutation;
 
   public population: Individual[] = [];
   public populationCount: number = 10;
   public generationCount: number = 1;
+  public mutationChance: number = 0.5; // 50% chance
 
   constructor(public cities: City[]) {
     this.Spawn = SpawnGenerator(this);
     this.Individual = IndividualGenerator(this);
     this.Selection = SelectionGenerator(this);
     this.Crossover = CrossoverGenerator(this);
+    this.Mutation = MutationGenerator(this);
   }
 
   // SPAWN: Spawn method that spawns the initial population
@@ -52,6 +56,24 @@ export class World {
     return [new this.Individual(genome1), new this.Individual(genome2)];
   }
 
+  // MUTATION: Mutate the individual
+  private mutate(individual: Individual): Individual {
+    const chance = Math.random();
+
+    if (chance >= this.mutationChance) return individual;
+
+    const clonedGenome = structuredClone(individual.genome);
+    // Mutate the individual
+    if (Math.random() > 0.5) {
+      // Use Swap mutation
+      this.Mutation.Swap(clonedGenome);
+    } else {
+      // Use Rotate mutation
+      this.Mutation.Rotate(clonedGenome);
+    }
+    return new this.Individual(clonedGenome);
+  }
+
   // next generation
   public nextGen() {
     const offspring: Individual[] = [];
@@ -65,8 +87,12 @@ export class World {
 
       // Generate the offspring
       const [offspring1, offspring2] = this.getOffspring(mother, father);
-      offspring.push(offspring1);
-      offspring.push(offspring2);
+
+      // Mutate it before adding it to the population
+      const mutatedOffspring1 = this.mutate(offspring1);
+      const mutatedOffspring2 = this.mutate(offspring2);
+      offspring.push(mutatedOffspring1);
+      offspring.push(mutatedOffspring2);
     }
 
     // Add the offspring to the population
